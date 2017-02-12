@@ -1,9 +1,10 @@
 /*jshint laxbreak:true */
 
 var sizeParser = require('filesize-parser');
-var exec = require('child_process').exec, child;
+var exec = require('child_process').exec,
+  child;
 
-module.exports = function(path, opts, cb) {
+module.exports = function (path, opts, cb) {
   if (!cb) {
     cb = opts;
     opts = {};
@@ -12,15 +13,19 @@ module.exports = function(path, opts, cb) {
   var cmd = module.exports.cmd(path, opts);
   opts.timeout = opts.timeout || 5000;
 
-  exec(cmd, opts, function(e, stdout, stderr) {
-    if (e) { return cb(e); }
-    if (stderr) { return cb(new Error(stderr)); }
+  exec(cmd, opts, function (e, stdout, stderr) {
+    if (e) {
+      return cb(e);
+    }
+    if (stderr) {
+      return cb(new Error(stderr));
+    }
 
     return cb(null, module.exports.parse(path, stdout, opts));
   });
 };
 
-module.exports.cmd = function(path, opts) {
+module.exports.cmd = function (path, opts) {
   opts = opts || {};
   var format = [
     'name=',
@@ -29,16 +34,17 @@ module.exports.cmd = function(path, opts) {
     'colorspace=%[colorspace]',
     'height=%[height]',
     'width=%[width]',
-    'orientation=%[orientation]',
-    (opts.exif ? '%[exif:*]' : '')
+    'orientation=%[orientation]', (opts.exif ? '%[exif:*]' : '')
   ].join("\n");
 
-  return 'identify -format "' + format + '" ' + path;
+  return 'identify -quiet -format "' + format + '" ' + path;
 };
 
-module.exports.parse = function(path, stdout, opts) {
+module.exports.parse = function (path, stdout, opts) {
   var lines = stdout.split('\n');
-  var ret = {path: path};
+  var ret = {
+    path: path
+  };
   var i;
 
   for (i = 0; i < lines.length; i++) {
@@ -53,15 +59,20 @@ module.exports.parse = function(path, stdout, opts) {
 
         ret.exif[lines[i][0].substr(5)] = lines[i][1];
 
-      // Parse normal metadata keys
-      } else {
+        // Parse normal metadata keys
+      }
+      else {
         ret[lines[i][0]] = lines[i][1];
       }
     }
   }
 
-  if (ret.width) { ret.width = parseInt(ret.width, 10); }
-  if (ret.height) { ret.height = parseInt(ret.height, 10); }
+  if (ret.width) {
+    ret.width = parseInt(ret.width, 10);
+  }
+  if (ret.height) {
+    ret.height = parseInt(ret.height, 10);
+  }
 
   if (ret.size) {
     if (ret.size.substr(ret.size.length - 2) === 'BB') {
@@ -79,15 +90,11 @@ module.exports.parse = function(path, stdout, opts) {
     ret.orientation = '';
   }
 
-  if (opts && opts.autoOrient
-      && ( ret.orientation === 'LeftTop'
-        || ret.orientation === 'RightTop'
-        || ret.orientation === 'LeftBottom'
-        || ret.orientation === 'RightBottom')) {
+  if (opts && opts.autoOrient && (ret.orientation === 'LeftTop' ||  ret.orientation === 'RightTop' ||  ret.orientation === 'LeftBottom' ||  ret.orientation === 'RightBottom')) {
 
-    ret.width  = ret.width + ret.height;
+    ret.width = ret.width + ret.height;
     ret.height = ret.width - ret.height;
-    ret.width  = ret.width - ret.height;
+    ret.width = ret.width - ret.height;
   }
 
   return ret;
