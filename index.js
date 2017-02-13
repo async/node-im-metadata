@@ -37,7 +37,9 @@ module.exports.cmd = function (path, opts) {
     'orientation=%[orientation]', (opts.exif ? '%[exif:*]' : '')
   ].join("\n");
 
-  return 'identify -quiet -format "' + format + '" ' + path;
+  var quiet = opts.quiet ? ' -quiet' : '';
+
+  return 'identify' + quiet + ' -format "' + format + '" ' + path;
 };
 
 module.exports.parse = function (path, stdout, opts) {
