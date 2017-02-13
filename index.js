@@ -13,8 +13,6 @@ module.exports = function (path, opts, cb) {
   var cmd = module.exports.cmd(path, opts);
   opts.timeout = opts.timeout || 5000;
 
-  console.log(cmd);
-
   exec(cmd, opts, function (e, stdout, stderr) {
     if (e) {
       return cb(e);
